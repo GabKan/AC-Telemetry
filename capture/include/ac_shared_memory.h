@@ -1,0 +1,111 @@
+#ifndef SHARED_FILE_OUT_H
+#define SHARED_FILE_OUT_H
+
+typedef int AC_STATUS;
+typedef int AC_SESSION_TYPE;
+
+#include <windows.h>
+
+struct SPageFilePhysics
+{
+    int packetId;
+
+    float gas;
+    float brake;
+    float fuel;
+
+    int gear;
+    int rpms;
+
+    float steerAngle;
+    float speedKmh;
+
+    float velocity[3];
+    float accG[3];
+    float wheelSlip[4];
+    float wheelLoad[4];
+    float wheelsPressure[4];
+    float wheelAngularSpeed[4];
+    float tyreWear[4];
+    float tyreDirtyLevel[4];
+    float tyreCoreTemperature[4];
+    float camberRAD[4];
+    float suspensionTravel[4];
+
+    float drs;
+    float tc;
+    float heading;
+    float pitch;
+    float roll;
+
+    float cgHeight;
+    float carDamage[5];
+
+    int numberOfTyresOut;
+    int pitLimiterOn;
+
+    float abs;
+};
+
+struct SPageFileGraphic
+{
+    int packetId;
+    
+    AC_STATUS status;
+    AC_SESSION_TYPE session;
+
+    wchar_t currentTime;
+    wchar_t lastTime;
+    wchar_t bestTime;
+    wchar_t split;
+
+    int completedLaps;
+    int position;
+    int iCurrentTime;
+    int iLastTime;
+    int iBestTime;
+    
+    float sessionTimeLeft;
+    float distanceTraveled;
+    
+    int isInPit;
+    int currentSectorIndex;
+    int lastSectorTime;
+    int numberOfLaps;
+    
+    wchar_t tyreCompound;
+    
+    float replayTimeMultiplier;
+    float normalizedCarPosition;
+    float carCoordinates;
+};
+
+
+struct SPageFileStatic
+{
+    wchar_t smVersion[15];
+    wchar_t acVersion[15];
+    
+    int numberOfSessions;
+    int numCars;
+    
+    wchar_t carModel[33];
+    wchar_t track[33];
+    wchar_t playerName[33];
+    wchar_t playerSurname[33];
+    wchar_t playerNick[33];
+    
+    int sectorCount;
+    
+    float maxTorque;
+    float maxPower;
+    
+    int	maxRpm;
+    
+    float maxFuel;
+    
+    float suspensionMaxTravel[4];
+    float tyreRadius[4];
+};
+
+#endif
