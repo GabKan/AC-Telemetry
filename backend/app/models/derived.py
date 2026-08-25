@@ -1,5 +1,5 @@
 from sqlmodel import Field, Relationship, SQLModel
-from typing import List
+from typing import List, Optional
 from datetime import datetime
 
 from typing import TYPE_CHECKING
@@ -62,4 +62,4 @@ class VideoClip(SQLModel, table=True):
         unique=True
     )
 
-    event: "Event" = Relationship(back_populates="video_clip")
+    event: Optional["Event"] = Relationship(back_populates="video_clip")
