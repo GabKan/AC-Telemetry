@@ -1,4 +1,6 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import axios from 'axios'
+
 import heroImg from './assets/hero.png'
 import reactLogo from './assets/react.svg'
 import viteLogo from './assets/vite.svg'
@@ -6,6 +8,13 @@ import './App.css'
 
 function App() {
   const [count, setCount] = useState(0)
+  const [status, setStatus] = useState('checking...')
+
+  useEffect(() => {
+    axios.get('http://localhost:8000/health')
+      .then((res) => setStatus(res.data.status))
+      .catch(() => setStatus('backend unreachable'))
+  }, [])
 
   return (
     <>
@@ -17,6 +26,7 @@ function App() {
         </div>
         <div>
           <h1>Get started</h1>
+          <p>Backend status: {status}</p>
           <p>
             Edit <code>src/App.jsx</code> and save to test <code>HMR</code>
           </p>
