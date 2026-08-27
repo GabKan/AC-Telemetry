@@ -54,7 +54,7 @@ class VideoClip(SQLModel, table=True):
     __tablename__ = "video_clips" # type: ignore
 
     clip_id: int            = Field(primary_key=True)
-    file_path: str | None   = Field(default=None, unique=True, index=True)
+    file_path: str | None   = Field(default=None)
 
     event_id: int | None = Field(
         default=None,
