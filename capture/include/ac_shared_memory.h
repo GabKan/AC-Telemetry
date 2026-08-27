@@ -22,6 +22,7 @@ struct SPageFilePhysics
 
     float velocity[3];
     float accG[3];
+
     float wheelSlip[4];
     float wheelLoad[4];
     float wheelsPressure[4];
@@ -39,6 +40,7 @@ struct SPageFilePhysics
     float roll;
 
     float cgHeight;
+
     float carDamage[5];
 
     int numberOfTyresOut;
@@ -54,10 +56,10 @@ struct SPageFileGraphic
     AC_STATUS status;
     AC_SESSION_TYPE session;
 
-    wchar_t currentTime;
-    wchar_t lastTime;
-    wchar_t bestTime;
-    wchar_t split;
+    wchar_t currentTime[15];
+    wchar_t lastTime[15];
+    wchar_t bestTime[15];
+    wchar_t split[15];
 
     int completedLaps;
     int position;
@@ -73,11 +75,11 @@ struct SPageFileGraphic
     int lastSectorTime;
     int numberOfLaps;
     
-    wchar_t tyreCompound;
+    wchar_t tyreCompound[33];
     
     float replayTimeMultiplier;
     float normalizedCarPosition;
-    float carCoordinates;
+    float carCoordinates[3];
 };
 
 
