@@ -1,10 +1,25 @@
 #ifndef SHARED_FILE_OUT_H
 #define SHARED_FILE_OUT_H
 
+#include <windows.h>
+
 typedef int AC_STATUS;
+
+#define AC_OFF 0
+#define AC_REPLAY 1
+#define AC_LIVE 2
+#define AC_PAUSE 3
+
 typedef int AC_SESSION_TYPE;
 
-#include <windows.h>
+#define AC_UNKNOWN -1
+#define AC_PRACTICE 0
+#define AC_QUALIFY 1
+#define AC_RACE 2
+#define AC_HOTLAP 3
+#define AC_TIME_ATTACK 4
+#define AC_DRIFT 5
+#define AC_DRAG 6
 
 struct SPageFilePhysics
 {
