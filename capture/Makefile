@@ -1,11 +1,14 @@
 CC = x86_64-w64-mingw32-g++
-CFLAGS = -Wall -Wextra -I./include -O2
-LDFLAGS = -lgdi32
+
+CFLAGS = -Wall -Wextra -I./include -O2 -std=c++17 -D_WIN32_WINNT=0x0A00 -DWINVER=0x0A00
+LDFLAGS = -lgdi32 -lws2_32
+
 SRC_DIR = src
 OBJ_DIR = bin
 
 SOURCES = $(wildcard $(SRC_DIR)/*.cpp)
 OBJECTS = $(patsubst $(SRC_DIR)/%.cpp, $(OBJ_DIR)/%.o, $(SOURCES))
+
 EXECUTABLE = telemetry.exe
 
 all: $(EXECUTABLE)

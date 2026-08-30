@@ -1,8 +1,11 @@
+#include <chrono>
 #include <iostream>
 #include <cstdio>
 #include <cstdlib>
 #include <cstdint>
+#include <string>
 
+#include "../include/httplib.h"
 #include "../include/ac_shared_memory.h"
 #include "../include/session_context.h"
 
@@ -59,6 +62,9 @@ void update(
                 func(physics, graphics, ctx);
                 last_packet_id = physics->packetId;
             }
+
+            // Send Batch of telemetry data
+
             Sleep(5);
         }
     }
@@ -66,9 +72,17 @@ void update(
 
 int main()
 {
-    void *buffer[3];
-    setup(buffer);
+    httplib::Client cli("127.0.0.1", 8000);
 
-    update(buffer, output_speed);
+    auto res = cli.Get("/health");
+    std::string result = "";
+    
+    std::cout << (res ? "Status code: " + std::to_string(res->status) + "\nResponse:\n" + res->body : 
+        "Status code: " + std::to_string(res->status)) << std::endl;
+
+    // void *buffer[3];
+    // setup(buffer);
+    //
+    // update(buffer, output_speed);
     return 0;
 }
