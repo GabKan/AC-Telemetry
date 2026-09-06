@@ -9,7 +9,7 @@ if TYPE_CHECKING:
 class Track(SQLModel, table=True):
     __tablename__ = "tracks" # type: ignore
 
-    track_id: int               = Field(primary_key=True)
+    track_id: int               = Field(default=None, primary_key=True)
     name: str | None            = Field(default=None, unique=True, index=True)
     layout_variant: str | None  = Field(default=None, index=True)
 
@@ -20,7 +20,7 @@ class Track(SQLModel, table=True):
 class Car(SQLModel, table=True):
     __tablename__ = "cars" # type: ignore
 
-    car_id: int                 = Field(primary_key=True)
+    car_id: int                 = Field(default=None, primary_key=True)
     name: str | None            = Field(default=None, unique=True, index=True)
     max_rpm: int | None         = Field(default=None)
     tyre_radius: float | None   = Field(default=None)
@@ -31,7 +31,7 @@ class Car(SQLModel, table=True):
 class Corner(SQLModel, table=True):
     __tablename__ = "corners" # type: ignore
 
-    corner_id: int              = Field(primary_key=True)
+    corner_id: int              = Field(default=None, primary_key=True)
     corner_number: int | None   = Field(default=None)
     name: str | None            = Field(default=None, unique=True, index=True)
 

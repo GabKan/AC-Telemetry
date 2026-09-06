@@ -10,7 +10,7 @@ if TYPE_CHECKING:
 class CornerPerformance(SQLModel, table=True):
     __tablename__ = "corner_performances" # type: ignore
 
-    performance_id: int             = Field(primary_key=True)
+    performance_id: int             = Field(default=None, primary_key=True)
     entry_speed_kmh: float | None   = Field(default=None)
     time_in_corner_ms: int | None   = Field(default=None)
 
@@ -31,7 +31,7 @@ class CornerPerformance(SQLModel, table=True):
 class Event(SQLModel, table=True):
     __tablename__ = "events" # type: ignore
 
-    event_id: int           = Field(primary_key=True)
+    event_id: int           = Field(default=None, primary_key=True)
     event_type: str | None  = Field(default=None)
     severity: int | None    = Field(default=None)
 
@@ -53,7 +53,7 @@ class Event(SQLModel, table=True):
 class VideoClip(SQLModel, table=True):
     __tablename__ = "video_clips" # type: ignore
 
-    clip_id: int            = Field(primary_key=True)
+    clip_id: int            = Field(default=None, primary_key=True)
     file_path: str | None   = Field(default=None)
 
     event_id: int | None = Field(

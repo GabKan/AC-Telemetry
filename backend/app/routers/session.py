@@ -43,8 +43,8 @@ async def get_session_by_id(
 
 class CreateSessionRequest(BaseModel):
     session_type: str
-    track_id: int
-    car_id: int
+    track: str
+    car: str
     started_at: datetime | None = None
 
 class SessionResponse(BaseModel):
@@ -53,6 +53,35 @@ class SessionResponse(BaseModel):
     started_at: datetime
     track_id: int
     car_id: int
+
+
+def get_or_create_track(db: SessionDep, name: str) -> Track:
+    existing = db.exec(select(Track).where(Track.name == name)).first()
+    if existing:
+        return existing
+
+    track = Track(name=name)
+    db.add(track)
+
+    db.commit()
+    db.refresh(track)
+
+    return track
+
+
+def get_or_create_car(db: SessionDep, name: str) -> Car:
+    existing = db.exec(select(Car).where(Car.name == name)).first()
+
+    if existing:
+        return existing
+
+    car = Car(name=name)
+    db.add(car)
+
+    db.commit()
+    db.refresh(car)
+
+    return car
 
 
 @session_router.post("/sessions")
@@ -72,17 +101,19 @@ async def create_session(
         "started_at": "2025-08-28T10:30:00Z"
     }
     """
+    track = get_or_create_track(db, request_data.track)
+    car = get_or_create_car(db, request_data.car)
     started_at = request_data.started_at or datetime.now(timezone.utc)
 
     curr_session: ACSession = ACSession(
         session_type=request_data.session_type,
         started_at=started_at,
-        track_id=request_data.track_id,
-        car_id=request_data.car_id
+        track_id=track.track_id,
+        car_id=car.car_id
     )
 
     db.add(curr_session)
-    await db.commit()
-    await db.refresh(curr_session)
+    db.commit()
+    db.refresh(curr_session)
 
     return curr_session

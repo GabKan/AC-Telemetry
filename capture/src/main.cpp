@@ -1,58 +1,23 @@
 #include <chrono>
 #include <iostream>
-#include <cstdio>
-#include <cstdlib>
 #include <cstdint>
-#include <string>
 
 #include "../include/httplib.h"
-#include "../include/json.h"
 
 #include "../include/ac_shared_memory.h"
 #include "../include/session_context.h"
-
-#define PHYSICS_MAPPING  0
-#define GRAPHICS_MAPPING 1
-#define STATICS_MAPPING  2
+#include "../include/logging.h"
+#include "../include/network_utils.h"
+#include "../include/session_utils.h"
+#include "../include/shared_memory_utils.h"
+#include "../include/telemetry.h"
 
 const auto FLUSH_INTERVAL = std::chrono::seconds(2);
 
-using json = nlohmann::json;
-
-void buffer_telemetry(const SPageFilePhysics *physics, const SPageFileGraphic *graphics, SessionContext &ctx)
-{
-    TelemetrySample sample = {
-        .packet_id   = physics->packetId,
-        .speed_kmh   = physics->speedKmh,
-        .rpms        = physics->rpms,
-        .gear        = physics->gear,
-        .gas         = physics->gas,
-        .brake       = physics->brake,
-        .steer_angle = physics->steerAngle
-    };
-
-    ctx.pending_samples.push_back(sample);
-}
-
-void setup(void **buffer)
-{
-    HANDLE ac_phys_mapping_handle     { OpenFileMapping(FILE_MAP_READ, FALSE, "acpmf_physics") };
-    HANDLE ac_graphics_mapping_handle { OpenFileMapping(FILE_MAP_READ, FALSE, "acpmf_graphics") };
-    HANDLE ac_static_mapping_handle   { OpenFileMapping(FILE_MAP_READ, FALSE, "acpmf_static") };
-
-    buffer[PHYSICS_MAPPING]  = MapViewOfFile(ac_phys_mapping_handle, FILE_MAP_READ, 0, 0, 0);
-    buffer[GRAPHICS_MAPPING] = MapViewOfFile(ac_graphics_mapping_handle, FILE_MAP_READ, 0, 0, 0);
-    buffer[STATICS_MAPPING]  = MapViewOfFile(ac_static_mapping_handle, FILE_MAP_READ, 0, 0, 0);
-
-    CloseHandle(ac_phys_mapping_handle);
-    CloseHandle(ac_graphics_mapping_handle);
-    CloseHandle(ac_static_mapping_handle);
-}
-
 void update(
     void **buffer,
-    void (*func)(const SPageFilePhysics *, const SPageFileGraphic *, SessionContext &),
-    httplib::Client &client
+    void (*func)(const SPageFilePhysics *, const SPageFileGraphic *, SessionContext *),
+    httplib::Client *cli
 )
 {
     // Cast buffer sections to appropriate shared memory structs
@@ -64,19 +29,28 @@ void update(
     {
         // Check for if a game session is ACTIVE/LIVE
         // Waits continuously until a session is started
+        log_line(LogLevel::LOG_INFO, "Waiting to establish AC session.");
         while(graphics->status != AC_LIVE) { Sleep(500); }
 
-        std::wcout << L"Car Model: " << statics->carModel << std::endl;
-        std::wcout << L"Track: " << statics->track << std::endl;
-
-        SessionContext ctx;
-        ctx.track = statics->track;
-        ctx.car = statics->carModel;
-        ctx.session_id = 0;
+        log_line(LogLevel::LOG_INFO, "AC session is LIVE.");
+        std::wcout << L"\nCar Model: " << statics->carModel << std::endl;
+        std::wcout << L"Track: \n" << statics->track << std::endl;
 
         // Todo: Post to /session with track and car, parse session_id from response
-        ctx.last_flush_time = std::chrono::steady_clock::now();
+        SessionContext *ctx = create_session(
+            cli,
+            graphics->session,
+            statics->track,
+            statics->carModel
+        );
+        if (!ctx)
+        {
+            log_line(LogLevel::LOG_WARN, "Session creation failed. Retrying in 2 seconds.");
+            Sleep(2000);
+            continue;
+        }
 
+        ctx->last_flush_time = std::chrono::steady_clock::now();
         int64_t last_packet_id { -1 };
         while(graphics->status == AC_LIVE)
         {
@@ -87,14 +61,21 @@ void update(
             }
 
             auto now = std::chrono::steady_clock::now();
-            if (now - ctx.last_flush_time >= FLUSH_INTERVAL && !ctx.pending_samples.empty())
+            if (now - ctx->last_flush_time >= FLUSH_INTERVAL && !ctx->pending_samples.empty())
             {
                 // TODO: send_batch(cli, ctx) — POST ctx.pending_samples, then ctx.pending_samples.clear()
-                ctx.last_flush_time = now;
+                send_batch(cli, ctx);
+                ctx->last_flush_time = now;
             }
 
             Sleep(5);
         }
+
+        // Drain on session exit
+        if(!ctx->pending_samples.empty())
+            send_batch(cli, ctx);
+        log_line(LogLevel::LOG_INFO, "Session ended.");
+        delete ctx;
     }
 }
 
@@ -107,24 +88,13 @@ int main()
     cli.set_read_timeout(1);
     cli.set_write_timeout(1);
 
-    auto res = cli.Get("/health");
-    if(!res)
-    {
-        std::cout << "[FAILED CONNECTION] Reason: [" << res.error() << "]" << std::endl;
-        return -1;
-    }
-
-    if(res->status != 200)
-    {
-        std::cout << "Status code: [" << res->status << "]" << std::endl;
-        std::cout << "Expected [200]" << std::endl;
-        return -1;
-    }
+    wait_for_backend(cli, 10);
 
     // Initialise buffer to hold shared memory structs
     // Loops through shared memory data for seeding the backend
     void *buffer[3];
     setup(buffer);
-    update(buffer, buffer_telemetry, cli);
+    update(buffer, buffer_telemetry, &cli);
+
     return 0;
 }

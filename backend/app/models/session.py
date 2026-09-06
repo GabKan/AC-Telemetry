@@ -10,7 +10,7 @@ if TYPE_CHECKING:
 class ACSession(SQLModel, table=True):
     __tablename__ = "sessions" # type: ignore
 
-    session_id: int             = Field(primary_key=True)
+    session_id: int             = Field(default=None, primary_key=True)
     session_type: str | None    = Field(default=None, index=True)
     started_at: datetime | None = Field(default=None, index=True)
 
@@ -32,7 +32,7 @@ class ACSession(SQLModel, table=True):
 class Lap(SQLModel, table=True):
     __tablename__ = "laps" # type: ignore
 
-    lap_id: int = Field(primary_key=True)
+    lap_id: int = Field(default=None, primary_key=True)
     lap_number: int | None  = Field(default=None)
     lap_time_ms: int | None = Field(default=None)
     is_valid: bool          = Field(default=True)
@@ -51,7 +51,7 @@ class Lap(SQLModel, table=True):
 class Telemetry(SQLModel, table=True):
     __tablename__ = "telemetry" # type: ignore
 
-    telemetry_id: int               = Field(primary_key=True)
+    telemetry_id: int               = Field(default=None, primary_key=True)
     packet_id: int | None           = Field(default=None)
     normalised_pos: float | None    = Field(default=None)
     speed_kmh: float | None         = Field(default=None)

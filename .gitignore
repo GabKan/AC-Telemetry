@@ -9,4 +9,8 @@ frontend/dist/
 capture/.clangd
 capture/compile_flags.txt
 
+ac-project-setup
+
+ac-project-setup.sh
+
 __pycache__/
